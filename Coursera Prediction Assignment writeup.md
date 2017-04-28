@@ -128,11 +128,30 @@ $(document).ready(function () {
 <h2>Introduction</h2>
 <p>It is now possible to collect a large amount of data about personal activity relatively inexpensively Using devices such as Jawbone Up, Nike FuelBand, and Fitbit . These type of devices are part of the quantified self movement a group of enthusiasts to find patterns in their behavior, or because they are tech geeks and who take measurements about themselves regularly to improve their health, . One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it.</p>
 <p>In this project, we will use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants to predict the manner in which they did the exercise. Data Preprocessing</p>
-<pre class="r"><code>library(caret)
-library(rpart)
-library(rpart.plot)
-library(randomForest)
-library(corrplot)</code></pre>
+<pre class="r"><code>library(caret)</code></pre>
+<pre><code>## Warning: package 'caret' was built under R version 3.3.3</code></pre>
+<pre><code>## Loading required package: lattice</code></pre>
+<pre><code>## Loading required package: ggplot2</code></pre>
+<pre><code>## Warning: package 'ggplot2' was built under R version 3.3.3</code></pre>
+<pre><code>## 
+## Attaching package: 'ggplot2'</code></pre>
+<pre><code>## The following object is masked _by_ '.GlobalEnv':
+## 
+##     diamonds</code></pre>
+<pre class="r"><code>library(rpart)
+library(rpart.plot)</code></pre>
+<pre><code>## Warning: package 'rpart.plot' was built under R version 3.3.3</code></pre>
+<pre class="r"><code>library(randomForest)</code></pre>
+<pre><code>## Warning: package 'randomForest' was built under R version 3.3.3</code></pre>
+<pre><code>## randomForest 4.6-12</code></pre>
+<pre><code>## Type rfNews() to see new features/changes/bug fixes.</code></pre>
+<pre><code>## 
+## Attaching package: 'randomForest'</code></pre>
+<pre><code>## The following object is masked from 'package:ggplot2':
+## 
+##     margin</code></pre>
+<pre class="r"><code>library(corrplot)</code></pre>
+<pre><code>## Warning: package 'corrplot' was built under R version 3.3.3</code></pre>
 <p>Read the Data</p>
 <pre class="r"><code>traindata &lt;- read.csv(&quot;C:/Ashish_Data/Work/coursera/Module8/pml-training.csv&quot;)
 testdata &lt;- read.csv(&quot;C:/Ashish_Data/Work/coursera/Module8/pml-testing.csv&quot;)
