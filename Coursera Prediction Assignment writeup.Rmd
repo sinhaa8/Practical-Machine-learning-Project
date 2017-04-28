@@ -1,0 +1,105 @@
+---
+title: "Coursera Prediction Assignment Writeup"
+author: "Ashish Sinha"
+date: "April 28, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+It is now possible to collect a large amount of data about personal activity relatively inexpensively Using devices such as Jawbone Up, Nike FuelBand, and Fitbit . These type of devices are part of the quantified self movement a group of enthusiasts to find patterns in their behavior, or because they are tech geeks and who take measurements about themselves regularly to improve their health, . One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it.
+
+In this project, we will use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants to predict the manner in which they did the exercise.
+Data Preprocessing
+```{r}
+library(caret)
+library(rpart)
+library(rpart.plot)
+library(randomForest)
+library(corrplot)
+```
+Read the Data
+```{r}
+traindata <- read.csv("C:/Ashish_Data/Work/coursera/Module8/pml-training.csv")
+testdata <- read.csv("C:/Ashish_Data/Work/coursera/Module8/pml-testing.csv")
+dim(traindata)
+dim(testdata)
+```
+The training data set contains 19622 observations and 160 variables, while the testing data set contains 20 observations and 160 variables. The "classe" variable in the training set is the outcome to predict.
+
+Clean the data
+
+In this step, we will clean the data and get rid of observations with missing values as well as some meaningless variables
+```{r}
+sum(complete.cases(traindata))
+```
+First, we remove columns that contain NA missing values.
+```{r}
+traindata <- traindata[, colSums(is.na(traindata)) == 0] 
+testdata <- testdata[, colSums(is.na(testdata)) == 0] 
+```
+Next, we get rid of some columns that do not contribute much to the accelerometer measurements.
+```{r}
+classe <- traindata$classe
+trainRemove <- grepl("^X|timestamp|window", names(traindata))
+traindata <- traindata[, !trainRemove]
+trainCleaned <- traindata[, sapply(traindata, is.numeric)]
+trainCleaned$classe <- classe
+testRemove <- grepl("^X|timestamp|window", names(testdata))
+testdata <- testdata[, !testRemove]
+testCleaned <- testdata[, sapply(testdata, is.numeric)]
+```
+Now, the cleaned training data set contains 19622 observations and 53 variables, while the testing data set contains 20 observations and 53 variables. The "classe" variable is still in the cleaned training set.
+
+Slice the data
+
+Then, we can split the cleaned training set into a pure training data set (70%) and a validation data set (30%). We will use the validation data set to conduct cross validation in future steps.
+```{r}
+set.seed(21000) # For reproducibile purpose
+inTrain <- createDataPartition(trainCleaned$classe, p=0.70, list=F)
+traindata <- trainCleaned[inTrain, ]
+testdata <- trainCleaned[-inTrain, ]
+```
+
+Data Modeling
+
+We fit a predictive model for activity recognition using Random Forest algorithm because it automatically selects important variables and is robust to correlated covariates & outliers in general. We will use 5-fold cross validation when applying the algorithm.
+```{r}
+controlRf <- trainControl(method="cv", 5)
+modelRf <- train(classe ~ ., data=traindata, method="rf", trControl=controlRf, ntree=250)
+modelRf
+```
+Then, we estimate the performance of the model on the validation data set.
+```{r}
+predictRf <- predict(modelRf, testdata)
+confusionMatrix(testdata$classe, predictRf)
+precision <- postResample(predictRf, testdata$classe)
+precision
+error <- 1 - as.numeric(confusionMatrix(testdata$classe, predictRf)$overall[1])
+error
+```
+So, the estimated precision of the model is 99.42% and the estimated out-of-sample error is 0.58%.
+
+Predicting for Test Data Set
+
+Now, we apply the model to the original testing data set downloaded from the data source. We remove the problem_id column first.
+```{r}
+outcome <- predict(modelRf, testCleaned[, -length(names(testCleaned))])
+outcome
+```
+## Appendix: Figures
+Correlation Matrix Visualization
+
+```{r , echo=FALSE}
+corrPlot <- cor(traindata[, -length(names(traindata))])
+corrplot(corrPlot, method="color")
+```
+Decision Tree Visualization
+```{r , echo=FALSE}
+treeModel <- rpart(classe ~ ., data=traindata, method="class")
+prp(treeModel) # fast plot
+```
